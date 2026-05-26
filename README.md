@@ -1,6 +1,6 @@
 # Unified API Prototype (Node.js / Python Flask / MongoDB)
 
-A containerized backend service built during my backend engineering internship at Invenzo Labs. This repository contains the progression of an inventory/item management API—originally developed in Node.js/Express, translated into Python Flask using MongoEngine, enhanced with enterprise-level search/pagination parameters, and fully containerized using Docker.
+A containerized backend service built during my internship at Invenzo Labs. This repository contains the progression of an inventory/item management API, originally developed in Node.js/Express, translated into Python Flask using MongoEngine, enhanced with enterprise-level search/pagination parameters, and fully containerized using Docker.
 
 ## 🚀 Features
 * **Dual Implementation:** Includes both the original Node.js/Express prototype and the migrated Python Flask production-ready codebase.
