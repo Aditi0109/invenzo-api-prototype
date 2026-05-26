@@ -28,5 +28,7 @@ A containerized backend service built during my internship at Invenzo Labs. This
 ```
 
 Local Development Setup - Prerequisites:
+
 Docker Desktop installed and running
+
 Node.js (to run the data pusher script)
