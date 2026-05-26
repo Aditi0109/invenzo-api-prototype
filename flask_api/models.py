@@ -6,4 +6,5 @@ class Item(Document):
     category = StringField(required=False)
     quantity = IntField(required=False)
 
-    meta = {'collection': 'items'}
+    meta = {'collection': 'items',
+            'strict': False}

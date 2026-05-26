@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  # Service 1: The Python Flask API
+  web-api:
+    build: ./flask_api
+    container_name: flask_api_container
+    ports:
+      - "5000:5000"
+    environment:
+      - MONGO_URI=mongodb://mongo-db:27017/internship_dummy_db
+    depends_on:
+      - mongo-db
+
+  # Service 2: The isolated MongoDB Database
+  mongo-db:
+    image: mongo:latest
+    container_name: mongodb_container
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data: # Keeps your dummy data safe even when you stop or delete the containers

@@ -1,11 +1,13 @@
 from flask import Flask, request, jsonify
 from mongoengine import connect, ValidationError
 from models import Item
+import os
 
 app = Flask(__name__)
 
 # Connect explicitly to local MongoDB internship_dummy_db
-connect(host='mongodb://127.0.0.1:27017/internship_dummy_db')
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://127.0.0.1:27017/internship_dummy_db")
+connect(host=MONGO_URI)
 
 
 @app.route('/', methods=['GET'])
@@ -51,15 +53,42 @@ def create_item():
 @app.route('/api/items', methods=['GET'])
 def get_items():
     try:
-        items = Item.objects()
+        # Support optional pagination and search query parameters
+        page = int(request.args.get('page', 1))
+        limit = int(request.args.get('limit', 0))  # 0 means no limit
+        search_query = request.args.get('search', '')
+
+        # Build base queryset
+        if search_query:
+            query_set = Item.objects(name__icontains=search_query)
+        else:
+            query_set = Item.objects()
+
+        total_items = query_set.count()
+
+        # Apply pagination if limit > 0
+        if limit > 0:
+            skip_amount = (page - 1) * limit
+            query_set = query_set.skip(skip_amount).limit(limit)
+
         result = []
-        for it in items:
+        for it in query_set:
             result.append({
                 'id': str(it.id),
                 'name': it.name,
                 'category': it.category,
                 'quantity': it.quantity
             })
+
+        # If pagination was requested, return metadata
+        if limit > 0:
+            return jsonify({
+                'totalItems': total_items,
+                'currentPage': page,
+                'itemsPerPage': limit,
+                'data': result
+            }), 200
+
         return jsonify(result), 200
     except Exception as err:
         return jsonify({'error': str(err)}), 500
