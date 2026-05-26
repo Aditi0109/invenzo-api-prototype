@@ -25,3 +25,8 @@ A containerized backend service built during my internship at Invenzo Labs. This
 ├── pusher.js            # Axios-based automated data simulation script
 └── docker-compose.yml   # Multi-container orchestration layer
 
+```
+
+Local Development Setup - Prerequisites:
+Docker Desktop installed and running
+Node.js (to run the data pusher script)
