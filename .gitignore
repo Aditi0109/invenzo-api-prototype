@@ -1,2 +1,10 @@
 node_modules/
 .env
+# Ignore Python virtual environments
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Ignore the generated vector database folder
+faiss_kajabi_index/
