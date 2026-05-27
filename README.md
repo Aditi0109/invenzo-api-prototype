@@ -24,6 +24,7 @@ A containerized backend service built during my internship at Invenzo Labs. This
 │   └── Dockerfile       # Container recipe for Python service
 ├── pusher.js            # Axios-based automated data simulation script
 └── docker-compose.yml   # Multi-container orchestration layer
+└── kajabi_vector_pipeline.py   # RAG Data Ingestion pipeline (Extracts docs, chunks text, and generates FAISS embeddings)
 
 ```
 
