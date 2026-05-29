@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kajabi Onboarding AI Assistant</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #121214; color: #e1e1e6; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .chat-container { width: 100%; max-width: 650px; height: 80vh; background: #1a1a1e; border-radius: 12px; display: flex; flex-direction: column; box-shadow: 0 8px 24px rgba(0,0,0,0.5); border: 1px solid #29292e; overflow: hidden; }
+        .chat-header { background: #202024; padding: 20px; border-bottom: 1px solid #29292e; text-align: center; }
+        .chat-header h2 { font-size: 1.25rem; color: #00b37e; font-weight: 600; }
+        .chat-header p { font-size: 0.85rem; color: #a8a8b3; margin-top: 4px; }
+        .chat-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        .message { max-width: 80%; padding: 12px 16px; border-radius: 8px; line-height: 1.5; font-size: 0.95rem; word-wrap: break-word; }
+        .user-message { background: #00b37e; color: #ffffff; align-self: flex-end; border-bottom-right-radius: 0; }
+        .bot-message { background: #29292e; color: #e1e1e6; align-self: flex-start; border-bottom-left-radius: 0; border: 1px solid #323238; }
+        .input-area { padding: 20px; background: #202024; border-top: 1px solid #29292e; display: flex; gap: 10px; }
+        .input-area input { flex: 1; background: #121214; border: 1px solid #29292e; border-radius: 6px; padding: 14px; color: #ffffff; font-size: 0.95rem; outline: none; }
+        .input-area input:focus { border-color: #00b37e; }
+        .input-area button { background: #00b37e; border: none; color: white; padding: 0 24px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        .input-area button:hover { background: #008f64; }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="chat-header">
+        <h2>Kajabi RAG Engine Proof-of-Concept</h2>
+        <p>Grounded Product Knowledge Assistant via Gemini 2.5 Flash</p>
+    </div>
+    <div class="chat-box" id="chatBox">
+        <div class="message bot-message">Hello! Ask me any technical configuration questions regarding the platform documentation.</div>
+    </div>
+    <div class="input-area">
+        <input type="text" id="userInput" placeholder="Type your documentation query here..." onkeypress="handleKeyPress(event)">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+</div>
+
+<script>
+    const chatBox = document.getElementById('chatBox');
+    const userInput = document.getElementById('userInput');
+
+    function handleKeyPress(event) {
+        if (event.key === 'Enter') sendMessage();
+    }
+
+    async function sendMessage() {
+        const text = userInput.value.trim();
+        if (!text) return;
+
+        // Append User Message to UI
+        appendMessage(text, 'user-message');
+        userInput.value = '';
+
+        // Append Temporary Typing Indicator
+        const loadingDiv = appendMessage('Extracting vectors and generation payload...', 'bot-message');
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        try {
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: text })
+            });
+            const data = await response.json();
+            
+            // Remove typing indicator and show real response
+            loadingDiv.remove();
+            appendMessage(data.response, 'bot-message');
+        } catch (error) {
+            loadingDiv.remove();
+            appendMessage('Error establishing secure connection to local API service layer.', 'bot-message');
+        }
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function appendMessage(text, className) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${className}`;
+        messageDiv.innerText = text;
+        chatBox.appendChild(messageDiv);
+        return messageDiv;
+    }
+</script>
+
+</body>
+</html>
