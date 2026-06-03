@@ -1,4 +1,4 @@
-# 🚀 Dual-Core RAG Knowledge Engine & API Gateway
+# Dual-Core RAG Knowledge Engine & API Gateway
 
 An advanced, context-isolated Retrieval-Augmented Generation (RAG) platform built with a Python Flask backend application layer, standard vector indexing structures (`FAISS`), and Google Cloud's `Gemini 2.5 Flash` core foundational LLM model. 
 
@@ -41,14 +41,16 @@ This platform maps technical microservice API routes side-by-side with general p
 
 ```
 
-# Local Development Setup - Prerequisites:
+## Local Development Setup - Prerequisites:
 
 Docker Desktop installed and running
 
 Node.js (to run the data pusher script)
 
 #Activate your local runtime configuration
+
 .venv\Scripts\activate
 
-#Install the application layer requirement matrices-
+#Install the application layer requirement matrices
+
 pip install -r requirements.txt
