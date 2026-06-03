@@ -3,18 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kajabi Onboarding AI Assistant</title>
+    <title>Kajabi AI Knowledge Assistant</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #121214; color: #e1e1e6; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        .chat-container { width: 100%; max-width: 650px; height: 80vh; background: #1a1a1e; border-radius: 12px; display: flex; flex-direction: column; box-shadow: 0 8px 24px rgba(0,0,0,0.5); border: 1px solid #29292e; overflow: hidden; }
-        .chat-header { background: #202024; padding: 20px; border-bottom: 1px solid #29292e; text-align: center; }
+        .chat-container { width: 100%; max-width: 650px; height: 85vh; background: #1a1a1e; border-radius: 12px; display: flex; flex-direction: column; box-shadow: 0 8px 24px rgba(0,0,0,0.5); border: 1px solid #29292e; overflow: hidden; }
+        
+        .chat-header { background: #202024; padding: 15px 20px; border-bottom: 1px solid #29292e; text-align: center; }
         .chat-header h2 { font-size: 1.25rem; color: #00b37e; font-weight: 600; }
-        .chat-header p { font-size: 0.85rem; color: #a8a8b3; margin-top: 4px; }
+        
+        /* Tab Controls Style */
+        .tab-bar { display: flex; background: #202024; border-bottom: 1px solid #29292e; }
+        .tab-btn { flex: 1; padding: 12px; background: none; border: none; color: #a8a8b3; font-weight: 600; cursor: pointer; font-size: 0.95rem; transition: all 0.2s; border-bottom: 3px solid transparent; }
+        .tab-btn:hover { color: #ffffff; background: #252529; }
+        .tab-btn.active { color: #00b37e; border-bottom-color: #00b37e; background: #1a1a1e; }
+
         .chat-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
         .message { max-width: 80%; padding: 12px 16px; border-radius: 8px; line-height: 1.5; font-size: 0.95rem; word-wrap: break-word; }
         .user-message { background: #00b37e; color: #ffffff; align-self: flex-end; border-bottom-right-radius: 0; }
         .bot-message { background: #29292e; color: #e1e1e6; align-self: flex-start; border-bottom-left-radius: 0; border: 1px solid #323238; }
+        
         .input-area { padding: 20px; background: #202024; border-top: 1px solid #29292e; display: flex; gap: 10px; }
         .input-area input { flex: 1; background: #121214; border: 1px solid #29292e; border-radius: 6px; padding: 14px; color: #ffffff; font-size: 0.95rem; outline: none; }
         .input-area input:focus { border-color: #00b37e; }
@@ -26,14 +34,20 @@
 
 <div class="chat-container">
     <div class="chat-header">
-        <h2>Kajabi RAG Engine Proof-of-Concept</h2>
-        <p>Grounded Product Knowledge Assistant via Gemini 2.5 Flash</p>
+        <h2>Izoleap Dual-Core RAG Assistant</h2>
     </div>
+    
+    <div class="tab-bar">
+        <button class="tab-btn active" id="apiTab" onclick="switchMode('api')">🔧 Developer API Reference</button>
+        <button class="tab-btn" id="guideTab" onclick="switchMode('guide')">📖 User Knowledge Guides</button>
+    </div>
+
     <div class="chat-box" id="chatBox">
-        <div class="message bot-message">Hello! Ask me any technical configuration questions regarding the platform documentation.</div>
+        <div class="message bot-message" id="welcomeMessage">Welcome! I am operating in Developer API Mode. Ask me any configuration route or schema questions.</div>
     </div>
+    
     <div class="input-area">
-        <input type="text" id="userInput" placeholder="Type your documentation query here..." onkeypress="handleKeyPress(event)">
+        <input type="text" id="userInput" placeholder="Type your query here..." onkeypress="handleKeyPress(event)">
         <button onclick="sendMessage()">Send</button>
     </div>
 </div>
@@ -41,37 +55,55 @@
 <script>
     const chatBox = document.getElementById('chatBox');
     const userInput = document.getElementById('userInput');
+    let currentMode = 'api'; 
+    
+    // Generate a unique session identifier string when the page renders
+    // This separates this current browser instance from background windows
+    const sessionTimestamp = "session_" + Date.now();
 
-    function handleKeyPress(event) {
-        if (event.key === 'Enter') sendMessage();
+    function switchMode(selectedMode) {
+        if (currentMode === selectedMode) return;
+        currentMode = selectedMode;
+        
+        document.getElementById('apiTab').classList.toggle('active', selectedMode === 'api');
+        document.getElementById('guideTab').classList.toggle('active', selectedMode === 'guide');
+        
+        chatBox.innerHTML = '';
+        if (selectedMode === 'api') {
+            appendMessage('Switched to Developer API Mode. History is active for this tab context.', 'bot-message');
+        } else {
+            appendMessage('Switched to User Knowledge Guides Mode. History is active for this tab context.', 'bot-message');
+        }
     }
 
     async function sendMessage() {
         const text = userInput.value.trim();
         if (!text) return;
 
-        // Append User Message to UI
         appendMessage(text, 'user-message');
         userInput.value = '';
 
-        // Append Temporary Typing Indicator
-        const loadingDiv = appendMessage('Extracting vectors and generation payload...', 'bot-message');
+        const loadingDiv = appendMessage(`Querying local faiss_${currentMode} index with conversation memory tracking...`, 'bot-message');
         chatBox.scrollTop = chatBox.scrollHeight;
 
         try {
             const response = await fetch('/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: text })
+                body: JSON.stringify({ 
+                    message: text, 
+                    mode: currentMode,
+                    // Pass a distinct session ID separating the API history stream from the Guide history stream
+                    session_id: `${sessionTimestamp}_${currentMode}` 
+                })
             });
             const data = await response.json();
             
-            // Remove typing indicator and show real response
             loadingDiv.remove();
             appendMessage(data.response, 'bot-message');
         } catch (error) {
             loadingDiv.remove();
-            appendMessage('Error establishing secure connection to local API service layer.', 'bot-message');
+            appendMessage('System interface connection drop encountered.', 'bot-message');
         }
         chatBox.scrollTop = chatBox.scrollHeight;
     }

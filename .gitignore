@@ -8,3 +8,12 @@ __pycache__/
 
 # Ignore the generated vector database folder
 faiss_kajabi_index/
+
+# Ignore virtual environments
+.venv/
+Kajabi_Scraper/venv/
+
+faiss_guides_index/
+
+kajabi_full_api_documentation.txt
+kajabi_full_guides_documentation.txt
