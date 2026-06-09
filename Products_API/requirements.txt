@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+pymongo
+pandas
+openpyxl
+nltk
+pydantic
+pydantic-settings
+python-multipart
+aiosmtplib
