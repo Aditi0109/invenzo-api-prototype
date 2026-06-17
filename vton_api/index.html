@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Virtual Try-On Demo</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg: #f9fafb;
+            --card-bg: #ffffff;
+            --text: #1f2937;
+            --border: #e5e7eb;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+        h1 { margin-bottom: 0.5rem; color: #111827; }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+        .card {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+            border: 1px solid var(--border);
+        }
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        input[type="file"], select {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            box-sizing: border-box;
+            background: #fff;
+        }
+        button {
+            width: 100%;
+            background-color: var(--primary);
+            color: white;
+            padding: 0.85rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            margin-top: 1rem;
+        }
+        button:hover { background-color: var(--primary-hover); }
+        button:disabled { background-color: #9ca3af; cursor: not-allowed; }
+        
+        .output-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            min-height: 400px;
+            position: relative;
+            background: #f3f4f6;
+            overflow: hidden;
+        }
+        .output-box img {
+            max-width: 100%;
+            max-height: 500px;
+            object-fit: contain;
+            display: none;
+        }
+        .placeholder-text {
+            color: #6b7280;
+            text-align: center;
+            padding: 1rem;
+        }
+        .meta-info {
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: #4b5563;
+            width: 100%;
+            display: none;
+            justify-content: space-between;
+            border-top: 1px solid var(--border);
+            padding-top: 0.75rem;
+        }
+        .download-btn {
+            display: none;
+            text-decoration: none;
+            text-align: center;
+            background-color: #10b981;
+            color: white;
+            padding: 0.85rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 1rem;
+            margin-top: 1rem;
+        }
+        .download-btn:hover { background-color: #059669; }
+        
+        .spinner {
+            display: none;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: var(--primary);
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Virtual Try-On Workspace</h1>
+        <p>Upload files to run photorealistic apparel testing instantly.</p>
+    </header>
+
+    <div class="grid">
+        <div class="card">
+            <form id="tryonForm" onsubmit="event.preventDefault();">
+                <div class="form-group">
+                    <label for="personImage">Person Image (JPEG/PNG)</label>
+                    <input type="file" id="personImage" accept="image/jpeg, image/png" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="garmentImage">Garment Image (Flat-lay / Mannequin)</label>
+                    <input type="file" id="garmentImage" accept="image/jpeg, image/png" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="garmentType">Garment Configuration Category</label>
+                    <select id="garmentType">
+                        <option value="upper_body" selected>Upper Body (Tops/Jackets)</option>
+                        <option value="lower_body">Lower Body (Trousers/Skirts)</option>
+                        <option value="full_body">Full Body (Dresses/One-pieces)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="outputFormat">Target Export Format</label>
+                    <select id="outputFormat">
+                        <option value="jpeg" selected>JPEG</option>
+                        <option value="png">PNG</option>
+                    </select>
+                </div>
+
+                <button type="button" id="submitBtn" onclick="handleTryOnExecution()">Generate Try-On Transformation</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <label>Synthesized Compositing Output Preview</label>
+            <div class="output-box" id="outputBox">
+                <div class="spinner" id="loadingSpinner"></div>
+                <div class="placeholder-text" id="placeholderText">
+                    Awaiting configuration deployment... Fill out the controller form inputs to initialize inference pipeline.
+                </div>
+                <img id="resultImage" alt="VTON Pipeline Visual Output">
+            </div>
+            
+            <a href="#" id="downloadLink" class="download-btn">Download Generated Image</a>
+
+            <div class="meta-info" id="metaInfo">
+                <span id="modelLabel">Model: --</span>
+                <span id="latencyLabel">Latency: --</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const submitBtn = document.getElementById('submitBtn');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const placeholderText = document.getElementById('placeholderText');
+    const resultImage = document.getElementById('resultImage');
+    const downloadLink = document.getElementById('downloadLink');
+    const metaInfo = document.getElementById('metaInfo');
+    const modelLabel = document.getElementById('modelLabel');
+    const latencyLabel = document.getElementById('latencyLabel');
+
+    async function handleTryOnExecution() {
+        const personInput = document.getElementById('personImage');
+        const garmentInput = document.getElementById('garmentImage');
+
+        if (!personInput.files[0] || !garmentInput.files[0]) {
+            alert("Please select both a Person Image and a Garment Image before executing!");
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Computing Deep Learning Inference...";
+        loadingSpinner.style.display = 'block';
+        placeholderText.style.display = 'block';
+        placeholderText.innerText = "Executing Multimodal Diffusion processing loops... Please stand by.";
+        resultImage.style.display = 'none';
+        downloadLink.style.display = 'none';
+        metaInfo.style.display = 'none';
+
+        const personFile = personInput.files[0];
+        const garmentFile = garmentInput.files[0];
+        const garmentType = document.getElementById('garmentType').value;
+        const outputFormat = document.getElementById('outputFormat').value;
+
+        const formData = new FormData();
+        formData.append('person_image', personFile);
+        formData.append('garment_image', garmentFile);
+        formData.append('garment_type', garmentType);
+        formData.append('output_format', outputFormat);
+
+        try {
+            const response = await fetch('/api/v1/try-on', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Inference execution breakdown.');
+            }
+
+            const data = await response.json();
+
+            placeholderText.style.display = 'none';
+            
+            resultImage.src = data.result_image_url;
+            resultImage.style.display = 'block';
+
+            downloadLink.href = data.result_image_url;
+            downloadLink.setAttribute('download', `vton_result_${Date.now()}.${outputFormat}`);
+            downloadLink.style.display = 'block';
+
+            modelLabel.innerText = `Engine: ${data.model_used}`;
+            latencyLabel.innerText = `Latency: ${data.inference_time_ms} ms`;
+            metaInfo.style.display = 'flex';
+
+        } catch (error) {
+            console.error(error);
+            placeholderText.style.display = 'block';
+            placeholderText.innerHTML = `<span style="color: #ef4444; font-weight: 600;">Error: ${error.message}</span>`;
+        } finally {
+            loadingSpinner.style.display = 'none';
+            submitBtn.disabled = false;
+            submitBtn.innerText = "Generate Try-On Transformation";
+        }
+    }
+</script>
+</body>
+</html>

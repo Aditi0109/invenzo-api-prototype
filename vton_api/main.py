@@ -21,6 +21,13 @@ app = FastAPI(
     description="Backend API wrapping FASHN VTON 1.5 MMDiT model for digital garment compositing."
 )
 
+from fastapi.responses import FileResponse
+
+# Serve the index.html page directly at the root URL path
+@app.get("/", include_in_schema=False)
+async def serve_frontend_homepage():
+    return FileResponse("index.html")
+
 # Enable connection handling across distributed web components
 app.add_middleware(
     CORSMiddleware,
