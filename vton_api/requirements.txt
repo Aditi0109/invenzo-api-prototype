@@ -1,0 +1,8 @@
+fastapi>=0.100.0
+uvicorn>=0.22.0
+python-multipart>=0.0.6
+Pillow>=9.5.0
+opencv-python-headless>=4.7.0
+torch>=2.0.1 --extra-index-url https://download.pytorch.org/whl/cu118
+git+https://github.com/fashn-AI/fashn-vton-1.5.git
+onnxruntime-gpu>=1.16.0
