@@ -17,3 +17,7 @@ faiss_guides_index/
 
 kajabi_full_api_documentation.txt
 kajabi_full_guides_documentation.txt
+
+# Virtual Try-On Heavy Model Assets
+vton_api/weights/model.safetensors
+vton_api/weights/dwpose/
