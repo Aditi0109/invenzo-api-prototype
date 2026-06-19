@@ -6,13 +6,13 @@ By unifying specialized microservices under a centralized application gateway, t
 
 ## System Architecture Modules
 
-### Dual-Core RAG Knowledge Engine
+### >Dual-Core RAG Knowledge Engine
 Maps technical microservice API routes side-by-side with general product help center documentation. Built with a Python Flask application layer, it separates unstructured help data from technical schema architectures into isolated vector indices (`faiss_api_index` vs `faiss_guides_index`) to eliminate data pollution, maintaining context integrity using automated session-RAM memory loops.
 
-### Asynchronous Bulk Product Ingestion Engine (`Products_API`)
+### >Asynchronous Bulk Product Ingestion Engine (`Products_API`)
 A high-throughput FastAPI service capable of parsing large-scale catalog sheets (10,000+ rows) without blocking main application event loops. It implements multi-threaded background chunking, deterministic NLP text cleansing (NLTK Tokenization & Lemmatization), row-level data type normalization, and atomic MongoDB upserts, concluding with decoupled SMTP confirmation alerts upon batch completion.
 
-### AI-Powered Virtual Try-On Pipeline (`vton_api`)
+### >AI-Powered Virtual Try-On Pipeline (`vton_api`)
 A photorealistic apparel visualization service wrapping a 972M parameter Multimodal Diffusion Transformer (MMDiT) model. The backend utilizes lifecycle memory pinning to bind model weights directly to GPU VRAM and leverages an independent OpenCV HOG feature-descriptor filter to evaluate uploads upstream, preventing expensive graphics hardware calculation cycles from running on corrupted or non-human inputs.
 
 ## 🚀 Features
