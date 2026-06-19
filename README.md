@@ -13,6 +13,7 @@ This platform maps technical microservice API routes side-by-side with general p
 * **Advanced Querying:** GET endpoints equipped with case-insensitive substring searching and offset-based pagination (`page`, `limit`).
 * **Automation:** An automated JavaScript pusher script (`pusher.js`) to seed bulk dummy data via REST hooks.
 * **Orchestration:** Multi-container Docker Compose setup for instant deployment with isolated application and database layers.
+* **Asynchronous Bulk Product Ingestion:** A high-throughput FastAPI service (Products_API) capable of processing large-scale (10,000+ rows) Excel sheets. It handles multi-threaded background chunking, custom row-level validation, NLP text cleansing, atomic MongoDB upserts, and decoupled SMTP email completions.
 
 ---
 
@@ -27,6 +28,14 @@ This platform maps technical microservice API routes side-by-side with general p
 │   ├── app.py                  # Flask routing & pagination engine
 │   ├── requirements.txt        # Python dependencies
 │   └── Dockerfile              # Container recipe for Python service
+├── Products_API/               # High-Performance Asynchronous Bulk Data Pipeline
+│   ├── .env                    # Scope-isolated connection and SMTP configuration secrets
+│   ├── .env.example            # Version-controlled configuration schema template
+│   ├── main.py                 # FastAPI application gateway & background task scheduler
+│   ├── config.py               # Pydantic-Settings environment validation engine
+│   ├── database.py             # Native PyMongo initialization & unique index maintenance
+│   ├── nlp_utils.py            # Text normalization engine (NLTK Tokenization & Lemmatization)
+│   └── requirements.txt        # Isolated dependency list for the bulk processing system
 ├── templates/                 
 │   └── index.html              # Multi-tab asynchronous Web UI (Vanilla JS, Fetch API, CSS Engine)
 ├── faiss_api_index/            # Vector compilation folder: Grounded OpenAPI endpoint structural tokens
@@ -40,6 +49,14 @@ This platform maps technical microservice API routes side-by-side with general p
 └── requirements.txt            # Unified dependency configuration manifest for the target workspace root
 
 ```
+## Module Deep Dive: Products Bulk Upload API
+The Products_API submodule provides a structured, fail-safe architecture to process transactional catalogue files cleanly without blocking main event loops.
+
+### Technical Architecture
+* **Non-Blocking Background Workers:** Files are validated and acknowledged instantly with an HTTP 202 Accepted status. Long-running parsing jobs are offloaded natively using FastAPI BackgroundTasks.
+* **Atomic MongoDB Upserts:** Uses PyMongo’s unordered bulk_write coupled with UpdateOne(..., upsert=True) operators. Timestamps are synced dynamically using $setOnInsert for created_at records and $set for updated_at modifications.
+* **Deterministic NLP Processing:** Title fields are tokenized, stripped of alphanumeric noise, filtered using English NLTK stopwords, and contextualized using the WordNetLemmatizer model into a clean formatted_title indexing string.
+* **Robust Error Management:** Structural header checks validate data consistency out-of-band. Faulty row rows (e.g., missing fields or bad price datatypes) are isolated and skipped individually, preventing cascade failures across processing batches.
 
 ## Local Development Setup - Prerequisites:
 
@@ -54,3 +71,25 @@ Node.js (to run the data pusher script)
 #Install the application layer requirement matrices
 
 pip install -r requirements.txt
+
+## Products API Submodule Setup
+
+1.Navigate to the feature directory:
+
+cd Products_API
+
+2.Initialize environment configurations:
+
+cp .env.example .env
+
+3.Configure your MONGODB_URI and SMTP details inside the created .env file.
+
+4.Set up the local NLP dictionary dependencies:
+
+python -c "import nltk; nltk.download('stopwords'); nltk.download('wordnet'); nltk.download('punkt_tab')"
+
+5.Execute the FastAPI local engine application layer:
+
+python main.py
+
+6.Open interactive interface swagger schemes at: http://127.0.0.1:8000/docs
