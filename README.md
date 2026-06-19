@@ -1,6 +1,6 @@
 # Multi-Service E-Commerce AI Ecosystem & API Gateway
 
-An advanced, enterprise-grade application ecosystem that integrates intelligent customer interaction, automated catalog workflows, and generative AI features. The platform combines a context-isolated Retrieval-Augmented Generation (RAG) knowledge engine powered by Google Cloud's `Gemini 2.5 Flash` model and `FAISS` vector indexes, a high-throughput automated bulk data processing subsystem, and a state-of-the-art machine learning visualization layer.
+An advanced, enterprise-grade application ecosystem that integrates intelligent customer interaction, automated catalog workflows, and generative AI features. The platform combines a context-isolated Retrieval-Augmented Generation (RAG) knowledge engine powered by Google Cloud's `Gemini 2.5 Flash` model and `FAISS` vector indexes, a high-throughput automated bulk data processing subsystem, and a machine learning visualization layer.
 
 By unifying specialized microservices under a centralized application gateway, the architecture seamlessly handles complex, data-heavy e-commerce workloads alongside real-time multimodal image synthesis.
 
@@ -15,7 +15,7 @@ A high-throughput FastAPI service capable of parsing large-scale catalog sheets 
 ### >AI-Powered Virtual Try-On Pipeline (`vton_api`)
 A photorealistic apparel visualization service wrapping a 972M parameter Multimodal Diffusion Transformer (MMDiT) model. The backend utilizes lifecycle memory pinning to bind model weights directly to GPU VRAM and leverages an independent OpenCV HOG feature-descriptor filter to evaluate uploads upstream, preventing expensive graphics hardware calculation cycles from running on corrupted or non-human inputs.
 
-## 🚀 Features
+## 🟦 Features
 * **Context Isolation (Dual-Core Vector Space):** Separates unstructured user help data from technical schema architectures into unique indices (faiss_api_index vs faiss_guides_index) to completely prevent data pollution and hallucinations.
 * **Dynamic Ingestion Ingestion:** Pulls directly from the live OpenAPI standard configuration schema and programmatically parses live platform index layouts utilizing regular expression URL extractors.
 * **Dual Implementation:** Includes both the original Node.js/Express prototype and the migrated Python Flask production-ready codebase.
@@ -89,9 +89,9 @@ The vton_api service implements a robust, client-agnostic Virtual Try-On pipelin
 * **Asynchronous Worker Thread Offloading:** Heavily blocking deep-learning diffusion matrix computations are offloaded to an asynchronous background worker pool via FastAPI’s run_in_threadpool, keeping the ASGI application completely responsive to incoming requests.
 * **Independent Input Edge Guardrails:** To maximize hardware optimization, requests pass through two pre-processing validation check blocks before execution:
     
-    Guardrail A (Blur Assessment): Computes focus using an OpenCV Laplacian operator variance filter, filtering out unreadable or corrupted files upstream.  
+    * Guardrail A (Blur Assessment): Computes focus using an OpenCV Laplacian operator variance filter, filtering out unreadable or corrupted files upstream.  
 
-    Guardrail B (Human Shape Verification): Runs a localized OpenCV HOG Descriptor and Support Vector Machine (SVM) pedestrian model. If an invalid image (e.g., a pet animal or landscape layout) is detected, it halts execution immediately, avoiding unnecessary GPU sampling cycles.
+    * Guardrail B (Human Shape Verification): Runs a localized OpenCV HOG Descriptor and Support Vector Machine (SVM) pedestrian model. If an invalid image (e.g., a pet animal or landscape layout) is detected, it halts execution immediately, avoiding unnecessary GPU sampling cycles.
 
 * **Pixel-Space Diffusion Modeling:** Unlike typical autoencoder solutions that downscale patterns into a lossy latent array, the architecture computes generation steps over raw pixel channels natively at 20 optimized timesteps—ensuring fabric weaves, graphics, and apparel details remain razor-sharp.
 
