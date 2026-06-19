@@ -242,15 +242,18 @@
                 body: formData
             });
 
+            // If the backend guardrails rejected the payload, unpack the explanation message
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.detail || 'Inference execution breakdown.');
+                // Captures both standard FastAPI validation arrays and our custom raised ValueErrors
+                const errorMessage = errorData.detail || 'Inference execution breakdown.';
+                throw new Error(errorMessage);
             }
 
             const data = await response.json();
 
+            // Render Output Assets on success
             placeholderText.style.display = 'none';
-            
             resultImage.src = data.result_image_url;
             resultImage.style.display = 'block';
 
@@ -264,8 +267,19 @@
 
         } catch (error) {
             console.error(error);
+            // Hide the image canvas and spinner if things break down
+            resultImage.style.display = 'none';
+            downloadLink.style.display = 'none';
+            metaInfo.style.display = 'none';
+            
+            // Display the custom error block inside the preview panel container
             placeholderText.style.display = 'block';
-            placeholderText.innerHTML = `<span style="color: #ef4444; font-weight: 600;">Error: ${error.message}</span>`;
+            placeholderText.innerHTML = `
+                <div style="background-color: #fee2e2; border: 1px solid #fca5a5; padding: 1.5rem; border-radius: 8px; max-width: 80%;">
+                    <strong style="color: #dc2626; display: block; margin-bottom: 0.5rem; font-size: 1.1rem;">⚠️ Guardrail Alert</strong>
+                    <span style="color: #991b1b; font-size: 0.95rem; line-height: 1.4;">${error.message}</span>
+                </div>
+            `;
         } finally {
             loadingSpinner.style.display = 'none';
             submitBtn.disabled = false;
